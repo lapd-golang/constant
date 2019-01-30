@@ -72,6 +72,7 @@ func (rpcServer RpcServer) handleGetListOngoingCrowdsale(params interface{}, clo
 		SellingAsset     string
 		SellingAmount    uint64
 		DefaultSellPrice uint64
+		Type             string
 	}
 	result := []CrowdsaleInfo{}
 	saleDataList, err := rpcServer.config.BlockChain.GetAllCrowdsales()
@@ -82,6 +83,12 @@ func (rpcServer RpcServer) handleGetListOngoingCrowdsale(params interface{}, clo
 		if height >= saleData.EndBlock {
 			continue
 		}
+
+		// Add type for better ux, not blockchain-specific
+		crowdsaleType := "buyable"
+		if saleData.SellingAsset.IsEqual(&common.ConstantID) {
+			crowdsaleType = "sellable"
+		}
 		info := CrowdsaleInfo{
 			SaleID:           hex.EncodeToString(saleData.SaleID),
 			EndBlock:         saleData.EndBlock,
@@ -91,6 +98,7 @@ func (rpcServer RpcServer) handleGetListOngoingCrowdsale(params interface{}, clo
 			SellingAsset:     saleData.SellingAsset.String(),
 			SellingAmount:    saleData.SellingAmount,
 			DefaultSellPrice: saleData.DefaultSellPrice,
+			Type:             crowdsaleType,
 		}
 		result = append(result, info)
 	}
